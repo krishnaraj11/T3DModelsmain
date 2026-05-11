@@ -1,20 +1,26 @@
 package com.webpage.T3D.outer.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
+@NoArgsConstructor
 @Table(name = "models")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AssetModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // This links the 3D model back to the User who created it
+    //@JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;

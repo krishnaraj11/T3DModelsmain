@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/users/register").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
+                        .requestMatchers("/api/users/profile").permitAll()
+                        .requestMatchers("/api/users/public/**").permitAll()
                         .requestMatchers("/api/models/feed").permitAll()
                         .requestMatchers("/api/models/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()

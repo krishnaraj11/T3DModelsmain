@@ -1,15 +1,19 @@
 package com.webpage.T3D.outer.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.Instant;
 
 @Entity
-
+@NoArgsConstructor
 @Table(name = "users")
-@Data // This Lombok annotation automatically generates Getters and Setters for us
-public class User {
+@Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

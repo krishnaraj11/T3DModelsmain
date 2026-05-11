@@ -3,11 +3,13 @@ package com.webpage.T3D.outer.controller;
 import com.webpage.T3D.outer.dto.UserRegistrationDto;
 import com.webpage.T3D.outer.model.User;
 import com.webpage.T3D.outer.repository.UserRepository;
+import com.webpage.T3D.outer.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -23,6 +25,9 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDto dto) {
@@ -106,5 +111,45 @@ public class UserController {
         }
 
         return ResponseEntity.ok(requestedUser);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(
+            @RequestParam("username") String username,
+            @RequestParam("bio") String bio,
+            @RequestParam("paypalEmail") String paypalEmail,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            user.setBio(bio);
+            user.setPaypalEmail(paypalEmail);
+
+            if (image != null && !image.isEmpty()) {
+                // Use your existing fileStorageService to save the avatar
+                String imageName = fileStorageService.storeFile(image);
+                user.setProfileImageUrl("/uploads/" + imageName);
+            }
+
+            userRepository.save(user);
+            return ResponseEntity.ok("Profile updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
+
+    // Add this to your UserController
+    @GetMapping("/public/{username}")
+    public ResponseEntity<?> getPublicProfile(@PathVariable String username) {
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    Map<String, Object> profile = new HashMap<>();
+                    profile.put("username", user.getUsername());
+                    profile.put("bio", user.getBio());
+                    profile.put("profileImageUrl", user.getProfileImageUrl());
+                    return ResponseEntity.ok(profile);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
